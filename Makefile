@@ -12,7 +12,7 @@ env-down:
 env-cleanup:
 	@read -p "CLEANUP ALL VOLUME?? [y/N]: " ans; \
 	if [ "$$ans" = "y" ]; then \
-		docker compose down todoapp-postgres && \
+		docker compose down todoapp-postgres port-forwarder && \
 		rm -rf out/pgdata && \
 		echo "DB file is cleared"; \
 	else \
@@ -51,3 +51,11 @@ migrate-action:
 
 display:
 	@echo "$(PG_USER) $(PG_PASS) $(PG_DB)"
+
+run-todoapp:
+	@export LOGGER_FOLDER=${PROJECT_ROOT}/out/logs && \
+	export PG_HOST=localhost && \
+	go mod tidy && \
+	go run cmd/todoapp/main.go
+
+# inst: 7:48
