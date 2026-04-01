@@ -1,0 +1,82 @@
+package users_transport_http
+
+import (
+	"context"
+	"net/http"
+
+	"github.com/DimaKirejko/todoapp/internal/core/domain"
+	core_http_middleware "github.com/DimaKirejko/todoapp/internal/core/transport/http/middleware"
+	core_http_server "github.com/DimaKirejko/todoapp/internal/core/transport/http/server"
+)
+
+type UsersHttpHandler struct {
+	usersService UsersService
+}
+
+type UsersService interface {
+	CreateUser(
+		ctx context.Context,
+		user domain.User,
+	) (domain.User, error)
+
+	GetUsersService(
+		ctx context.Context,
+		limit *int,
+		offset *int,
+	) ([]domain.User, error)
+
+	GetUserService(
+		ctx context.Context,
+		id int,
+	) (domain.User, error)
+
+	DeleteUserService(
+		ctx context.Context,
+		id int,
+	) error
+
+	PatchUserService(
+		ctx context.Context,
+		id int,
+		patch domain.UserPatch,
+	) (domain.User, error)
+}
+
+func NewUsersHTTPHandler(usersService UsersService) *UsersHttpHandler {
+	return &UsersHttpHandler{
+		usersService: usersService,
+	}
+}
+
+func (h *UsersHttpHandler) Routes() []core_http_server.Route {
+	return []core_http_server.Route{
+		{
+			Method:  http.MethodPost,
+			Path:    "/users",
+			Handler: h.CreateUser,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/users",
+			Handler: h.GetUsersTransport,
+			Middleware: []core_http_middleware.Middleware{
+				core_http_middleware.Dummy("get users middleware"), // castom middleware
+			},
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/users/{id}",
+			Handler: h.GetUser,
+		},
+		{
+			Method:  http.MethodDelete,
+			Path:    "/users/{id}",
+			Handler: h.DeleteUser,
+		},
+		{
+			Method:  http.MethodPatch,
+			Path:    "/users/{id}",
+			Handler: h.PatchUser,
+		},
+	}
+}
