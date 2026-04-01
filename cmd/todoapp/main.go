@@ -8,7 +8,7 @@ import (
 	"syscall"
 
 	core_logger "github.com/DimaKirejko/todoapp/internal/core/logger"
-	core_postgres_pool "github.com/DimaKirejko/todoapp/internal/core/repository/postgres/pool"
+	core_pgx_pool "github.com/DimaKirejko/todoapp/internal/core/repository/postgres/pool/pgx"
 	core_http_middleware "github.com/DimaKirejko/todoapp/internal/core/transport/http/middleware"
 	core_http_server "github.com/DimaKirejko/todoapp/internal/core/transport/http/server"
 	users_postgres_repository "github.com/DimaKirejko/todoapp/internal/features/users/repository/postgres"
@@ -34,7 +34,8 @@ func main() {
 	}()
 
 	logger.Debug("initializing postgres connection pool")
-	pool, err := core_postgres_pool.NewConnectionPool(ctx, core_postgres_pool.NewConfigMust())
+	// pool, err := core_postgres_pool.NewConnectionPool(ctx, core_postgres_pool.NewConfigMust())
+	pool, err := core_pgx_pool.NewPool(ctx, core_pgx_pool.NewConfigMust())
 
 	if err != nil {
 		logger.Fatal("Failed to init postgres connection pool", zap.Error(err))
@@ -54,14 +55,18 @@ func main() {
 		logger,
 		core_http_middleware.RequestID(),
 		core_http_middleware.Logger(logger),
-		core_http_middleware.Panic(),
 		core_http_middleware.Trace(),
+		core_http_middleware.Panic(), // 10:49
 	)
 	apiVersionRouter := core_http_server.NewAPIVersionRoute(core_http_server.ApiVersion1)
 	apiVersionRouter.RegisterRoutes(usersTransportHttp.Routes()...)
-	httpServer.RegisterAPIRouters(apiVersionRouter) // 6:17 recheck all
+
+	apiVersionRouter2 := core_http_server.NewAPIVersionRoute(core_http_server.ApiVersion2, core_http_middleware.Dummy("api v2 middleware"))
+	apiVersionRouter2.RegisterRoutes(usersTransportHttp.Routes()...)
+
+	httpServer.RegisterAPIRouters(apiVersionRouter, apiVersionRouter2) // 6:17 recheck all
 
 	if err := httpServer.Run(ctx); err != nil {
 		logger.Error("HTTP server RUN error", zap.Error(err))
-	}
+	} //12:21 перевір як працює ця хуйня з кастомними мідлвеа core_http_middleware.Dummy
 }

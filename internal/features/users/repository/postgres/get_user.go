@@ -7,7 +7,7 @@ import (
 
 	"github.com/DimaKirejko/todoapp/internal/core/domain"
 	core_errors "github.com/DimaKirejko/todoapp/internal/core/errors"
-	"github.com/jackc/pgx/v5"
+	core_postgres_pool "github.com/DimaKirejko/todoapp/internal/core/repository/postgres/pool"
 )
 
 func (r *UsersRepository) GetPGUser(
@@ -36,7 +36,7 @@ func (r *UsersRepository) GetPGUser(
 	)
 
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
+		if errors.Is(err, core_postgres_pool.ErrNoRows) {
 			return domain.User{}, fmt.Errorf("user with id='%d': %w", id, core_errors.ErrNotFound)
 		}
 

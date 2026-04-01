@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/DimaKirejko/todoapp/internal/core/domain"
+	core_http_middleware "github.com/DimaKirejko/todoapp/internal/core/transport/http/middleware"
 	core_http_server "github.com/DimaKirejko/todoapp/internal/core/transport/http/server"
 )
 
@@ -58,6 +59,9 @@ func (h *UsersHttpHandler) Routes() []core_http_server.Route {
 			Method:  http.MethodGet,
 			Path:    "/users",
 			Handler: h.GetUsersTransport,
+			Middleware: []core_http_middleware.Middleware{
+				core_http_middleware.Dummy("get users middleware"), // castom middleware
+			},
 		},
 		{
 			Method:  http.MethodGet,
