@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"runtime/debug"
+	"strings"
 
 	core_errors "github.com/DimaKirejko/todoapp/internal/core/errors"
 	core_logger "github.com/DimaKirejko/todoapp/internal/core/logger"
@@ -68,7 +70,9 @@ func (h *HTTPResponseHandler) ErrorResponse(err error, msg string) {
 func (h *HTTPResponseHandler) PanicResponse(p any, msg string) {
 	statusCode := http.StatusInternalServerError
 	err := fmt.Errorf("unexpected panic: %v", p)
+	stackString := strings.Split(string(debug.Stack()), "\n")
 
+	h.log.Error("PANIC stackTrace:", zap.Strings("stack", stackString))
 	h.log.Error(msg, zap.Error(err))
 	h.errorResponse(statusCode, err, msg)
 }
