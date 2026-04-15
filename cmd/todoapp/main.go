@@ -13,6 +13,9 @@ import (
 	core_pgx_pool "github.com/DimaKirejko/todoapp/internal/core/repository/postgres/pool/pgx"
 	core_http_middleware "github.com/DimaKirejko/todoapp/internal/core/transport/http/middleware"
 	core_http_server "github.com/DimaKirejko/todoapp/internal/core/transport/http/server"
+	statisticsd_postgres_repository "github.com/DimaKirejko/todoapp/internal/features/statistics/repository/postgres"
+	statistics_service "github.com/DimaKirejko/todoapp/internal/features/statistics/service"
+	statistics_transport_http "github.com/DimaKirejko/todoapp/internal/features/statistics/transport/http"
 	task_postgres_repository "github.com/DimaKirejko/todoapp/internal/features/tasks/repository/postgres"
 	tasks_service "github.com/DimaKirejko/todoapp/internal/features/tasks/service"
 	tasks_transport_http "github.com/DimaKirejko/todoapp/internal/features/tasks/transport/http"
@@ -65,6 +68,11 @@ func main() {
 	tasksService := tasks_service.NewTasksService(tasksRepository)
 	tasksTransportHttp := tasks_transport_http.NewTasksHTTPHandler(tasksService)
 
+	logger.Debug("initializing feature", zap.String("feature", "statistics"))
+	statisticsREpository := statisticsd_postgres_repository.NewStatisticsRepository(pool)
+	statisticsService := statistics_service.NewStatisticsService(statisticsREpository)
+	statisticsTransportHTPP := statistics_transport_http.NewStatisticsHTTPHandler(statisticsService)
+
 	logger.Debug("initializing HTTP server")
 	httpServer := core_http_server.NewHTTPServer(
 		core_http_server.NewConfigMust(),
@@ -72,16 +80,17 @@ func main() {
 		core_http_middleware.RequestID(),
 		core_http_middleware.Logger(logger),
 		core_http_middleware.Trace(),
-		core_http_middleware.Panic(), // 10:49
+		core_http_middleware.Panic(),
 	)
 	apiVersionRouter := core_http_server.NewAPIVersionRoute(core_http_server.ApiVersion1)
 	apiVersionRouter.RegisterRoutes(usersTransportHttp.Routes()...)
 	apiVersionRouter.RegisterRoutes(tasksTransportHttp.Routes()...)
+	apiVersionRouter.RegisterRoutes(statisticsTransportHTPP.Routes()...)
 
 	apiVersionRouter2 := core_http_server.NewAPIVersionRoute(core_http_server.ApiVersion2, core_http_middleware.Dummy("api v2 middleware"))
 	apiVersionRouter2.RegisterRoutes(usersTransportHttp.Routes()...)
 
-	httpServer.RegisterAPIRouters(apiVersionRouter, apiVersionRouter2) // 6:17 recheck all
+	httpServer.RegisterAPIRouters(apiVersionRouter, apiVersionRouter2)
 
 	if err := httpServer.Run(ctx); err != nil {
 		logger.Error("HTTP server RUN error", zap.Error(err))
