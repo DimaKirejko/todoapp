@@ -59,3 +59,9 @@ run-todoapp:
 	go run ${PROJECT_ROOT}/cmd/todoapp/main.go
 
 # inst: 7:48
+
+todoapp-deploy:
+	@docker compose up -d --build todoapp
+
+ps:
+	@docker compose ps
