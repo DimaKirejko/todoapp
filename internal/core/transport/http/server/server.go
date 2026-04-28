@@ -47,6 +47,8 @@ func (s *HTTPServer) RegisterAPIRouters(routers ...*APIVersionRouter) {
 }
 
 func (s *HTTPServer) RegisterRoutes(routes ...Route) {
+	s.mux.Handle("/img/", http.StripPrefix("/img/", http.FileServer(http.Dir("./public/img")))) // It's a disgusting style of code, but this branch exists purely for fun :)
+
 	for _, route := range routes {
 		pattern := fmt.Sprintf("%s %s", route.Method, route.Path)
 
