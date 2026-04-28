@@ -23,8 +23,15 @@ import (
 	users_srvice "github.com/DimaKirejko/todoapp/internal/features/users/srvice"
 	users_transport_http "github.com/DimaKirejko/todoapp/internal/features/users/transport/http"
 	"go.uber.org/zap"
+
+	_ "github.com/DimaKirejko/todoapp/docs"
 )
 
+// @title todoapp (TDO)
+// @version 1.0
+// @description TDO REST-API schema
+// @host 127.0.0.1:5050
+// @BasePath /api/v1
 func main() {
 	cfg := core_config.NewConfigMust()
 
@@ -77,6 +84,7 @@ func main() {
 	httpServer := core_http_server.NewHTTPServer(
 		core_http_server.NewConfigMust(),
 		logger,
+		core_http_middleware.CORS(),
 		core_http_middleware.RequestID(),
 		core_http_middleware.Logger(logger),
 		core_http_middleware.Trace(),
@@ -91,8 +99,11 @@ func main() {
 	apiVersionRouter2.RegisterRoutes(usersTransportHttp.Routes()...)
 
 	httpServer.RegisterAPIRouters(apiVersionRouter, apiVersionRouter2)
+	httpServer.RegisterSwagger()
 
 	if err := httpServer.Run(ctx); err != nil {
 		logger.Error("HTTP server RUN error", zap.Error(err))
 	} //12:21 перевір як працює з кастомними мідлвеа core_http_middleware.Dummy //12:35
 }
+
+///19:48

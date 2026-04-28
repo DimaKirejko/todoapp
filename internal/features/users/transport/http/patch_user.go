@@ -13,8 +13,8 @@ import (
 )
 
 type PatchUserRequest struct {
-	FullName    core_http_types.Nullable[string] `json:"full_name"`
-	PhoneNumber core_http_types.Nullable[string] `json:"phone_number"`
+	FullName    core_http_types.Nullable[string] `json:"full_name"    swaggertype:"string" example:"Name Name Name"`
+	PhoneNumber core_http_types.Nullable[string] `json:"phone_number" swaggertype:"string" example:"+3809999999"`
 }
 
 func (r *PatchUserRequest) Validate() error {
@@ -47,6 +47,20 @@ func (r *PatchUserRequest) Validate() error {
 
 type PatchUserResponse UsersDTOREsponse
 
+// PatchUser godoc
+// @Summary Змінти параметри користувача
+// @Description Змінти параметри користувача
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param id path int true "user id"
+// @Param request body PatchUserRequest true "PatchUser тіло запиту"
+// @Success 200 {object} PatchUserResponse "Успішно змінений користувач"
+// @Failure 400 {object} core_http_response.ErrorResponse "Bad request"
+// @Failure 404 {object} core_http_response.ErrorResponse "User not found"
+// @Failure 409 {object} core_http_response.ErrorResponse "Conflict"
+// @Failure 500 {object} core_http_response.ErrorResponse "Internal server error"
+// @Router /users/{id} [patch]
 func (h *UsersHttpHandler) PatchUser(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromContext(ctx)

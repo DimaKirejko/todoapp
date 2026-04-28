@@ -12,9 +12,9 @@ import (
 )
 
 type PatchTaskReqDTO struct {
-	Title       core_http_types.Nullable[string] `json:"title"`
-	Description core_http_types.Nullable[string] `json:"description"`
-	Completed   core_http_types.Nullable[bool]   `json:"completed"`
+	Title       core_http_types.Nullable[string] `json:"title"       swaggertype:"string" example:"Name Name Name"`
+	Description core_http_types.Nullable[string] `json:"description" swaggertype:"string" example:"null"`
+	Completed   core_http_types.Nullable[bool]   `json:"completed"   swaggertype:"boolean"`
 }
 
 type PatchTaskResponse TaskDTOResponse
@@ -49,6 +49,20 @@ func (r *PatchTaskReqDTO) Validate() error {
 	return nil
 }
 
+// PathTask godoc
+// @Summary Змінти параметри задачі
+// @Description Змінти параметри задачі
+// @Tags tasks
+// @Accept json
+// @Produce json
+// @Param id path int true "user id"
+// @Param request body PatchTaskReqDTO true "PathTask тіло запиту"
+// @Success 200 {object} PatchTaskResponse "Успішно змінена задача"
+// @Failure 400 {object} core_http_response.ErrorResponse "Bad request"
+// @Failure 404 {object} core_http_response.ErrorResponse "User not found"
+// @Failure 409 {object} core_http_response.ErrorResponse "Conflict"
+// @Failure 500 {object} core_http_response.ErrorResponse "Internal server error"
+// @Router /tasks/{id} [patch]
 func (h *TasksHTTPHandler) PathTask(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromContext(ctx)

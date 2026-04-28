@@ -10,12 +10,23 @@ import (
 )
 
 type CrateUserReqDTO struct {
-	FullNmae    string  `json:"full_name" validate:"required,min=3,max=100"`
-	PhoneNumber *string `json:"phone_number" validate:"omitempty,min=10,max=15,startswith=+"`
+	FullNmae    string  `json:"full_name" validate:"required,min=3,max=100"                  example:"Name Name Name"`
+	PhoneNumber *string `json:"phone_number" validate:"omitempty,min=10,max=15,startswith=+" example:"+380999999"`
 }
 
 type CreateUserResponse UsersDTOREsponse
 
+// CreateUser godoc
+// @Summary Створити користувача
+// @Description Створити нового користувача в системі
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param request body CrateUserReqDTO true "CreateUser"
+// @Success 201 {object} CreateUserResponse "Успішно створений користувач"
+// @Failure 400 {object} core_http_response.ErrorResponse "Bad request"
+// @Failure 500 {object} core_http_response.ErrorResponse "Internal server error"
+// @Router /users [post]
 func (h *UsersHttpHandler) CreateUser(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromContext(ctx)
