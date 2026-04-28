@@ -34,10 +34,11 @@ const (
 // 	}
 // }
 
-func CORS() Middleware {
+func CORS(allowedProdOrigin string) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			allowedOrigins := map[string]struct{}{ // множина (штука в якій принципільна наявність ключа а не його значення)
+				allowedProdOrigin:       {},
 				"http://localhost:5050": {},
 				"null":                  {},
 			}
@@ -61,7 +62,7 @@ func CORS() Middleware {
 }
 
 func RequestID() Middleware {
-	return func(next http.Handler) http.Handler { //
+	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			requestID := r.Header.Get(xRequestIDHeader)
 			if requestID == "" {

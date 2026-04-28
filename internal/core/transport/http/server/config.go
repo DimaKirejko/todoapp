@@ -8,8 +8,9 @@ import (
 )
 
 type Config struct {
-	Addr            string        `envconfig:"ADDR" required:"true"`
-	ShutdownTimeout time.Duration `envconfig:"SHUTDOWN_TIMEOUT" default:"30s"`
+	Addr             string        `envconfig:"ADDR" required:"true"`
+	ShutdownTimeout  time.Duration `envconfig:"SHUTDOWN_TIMEOUT" default:"30s"`
+	AllowdProdOrigin string        `envconfig:"ALLOWED_PROD_ORIGIN" required:"true"`
 }
 
 func NewConfig() (Config, error) {
