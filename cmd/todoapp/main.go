@@ -22,6 +22,9 @@ import (
 	users_postgres_repository "github.com/DimaKirejko/todoapp/internal/features/users/repository/postgres"
 	users_srvice "github.com/DimaKirejko/todoapp/internal/features/users/srvice"
 	users_transport_http "github.com/DimaKirejko/todoapp/internal/features/users/transport/http"
+	web_fs_repository "github.com/DimaKirejko/todoapp/internal/features/web/repository/file_system"
+	web_service "github.com/DimaKirejko/todoapp/internal/features/web/service"
+	web_transport_http "github.com/DimaKirejko/todoapp/internal/features/web/transport/http"
 	"go.uber.org/zap"
 
 	_ "github.com/DimaKirejko/todoapp/docs"
@@ -80,11 +83,17 @@ func main() {
 	statisticsService := statistics_service.NewStatisticsService(statisticsREpository)
 	statisticsTransportHTPP := statistics_transport_http.NewStatisticsHTTPHandler(statisticsService)
 
+	logger.Debug("initializing feature", zap.String("feature", "web"))
+	webRepository := web_fs_repository.NewWebRepository()
+	webService := web_service.NewWebService(webRepository)
+	webTransportHTTP := web_transport_http.NewWebHttpHandler(webService)
+
 	logger.Debug("initializing HTTP server")
+	httpConfig := core_http_server.NewConfigMust()
 	httpServer := core_http_server.NewHTTPServer(
-		core_http_server.NewConfigMust(),
+		httpConfig,
 		logger,
-		core_http_middleware.CORS(),
+		core_http_middleware.CORS(httpConfig.AllowdProdOrigin),
 		core_http_middleware.RequestID(),
 		core_http_middleware.Logger(logger),
 		core_http_middleware.Trace(),
@@ -99,11 +108,12 @@ func main() {
 	apiVersionRouter2.RegisterRoutes(usersTransportHttp.Routes()...)
 
 	httpServer.RegisterAPIRouters(apiVersionRouter, apiVersionRouter2)
+
+	httpServer.RegisterRoutes(webTransportHTTP.Routes()...)
+
 	httpServer.RegisterSwagger()
 
 	if err := httpServer.Run(ctx); err != nil {
 		logger.Error("HTTP server RUN error", zap.Error(err))
-	} //12:21 перевір як працює з кастомними мідлвеа core_http_middleware.Dummy //12:35
+	}
 }
-
-///19:48
